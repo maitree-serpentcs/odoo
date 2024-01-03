@@ -60,13 +60,16 @@ def format_partner_address(partner):
         'postalCode': partner.zip,
         # Fill in the address fields if the format is supported, or fallback to the raw address.
         'street': street_data.get('street_name', partner.street),
-        'houseNumberOrName': street_data.get('street_number'),
+        'houseNumberOrName': street_data.get('street_number') or '',
     }
     for key, value in address.items():
         if key == 'stateOrProvince' and partner.country_id.code not in ['CA', 'US', 'GB']:
             continue
-        if not value:
+        elif key == 'houseNumberOrName':
+            continue  # `split_street_with_params` sometimes fails to extract the street number.
+        elif not value:
             raise ValidationError(_("Please complete your address details."))
+    return address
 
 
 # The method is copy-pasted from `base_address_extended` with small modifications.
